@@ -107,6 +107,12 @@ export default function ModalNewHabit({ visible, onClose }) {
   const [selectedColor, setSelectedColor] = useState(COLORS[3]); // default to green
   const [selectedIcon, setSelectedIcon] = useState(ICONS[0]); // default to circle-check
 
+  const handleSave = () => {
+    // TODO: Save habit logic here
+    console.log('Saving habit:', { name, description, color: selectedColor, icon: selectedIcon });
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
@@ -129,7 +135,11 @@ export default function ModalNewHabit({ visible, onClose }) {
                 <FontAwesome6 name="xmark" size={24} color="#ffffff" />
               </Pressable>
             </View>
-            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+              style={styles.modalBody} 
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+            >
               <View style={styles.formSection}>
                 <Text className="text-white text-base font-semibold mb-2">Name</Text>
                 <TextInput
@@ -202,6 +212,14 @@ export default function ModalNewHabit({ visible, onClose }) {
                 </View>
               </View>
             </ScrollView>
+            <View style={[styles.saveButtonContainer, { paddingBottom: insets.bottom }]}>
+              <Pressable 
+                onPress={handleSave}
+                style={[styles.saveButton, { backgroundColor: selectedColor }]}
+              >
+                <Text className="text-white font-semibold text-base">Save</Text>
+              </Pressable>
+            </View>
           </Pressable>
         </View>
       </Pressable>
@@ -235,6 +253,23 @@ const styles = StyleSheet.create({
   },
   modalBody: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  saveButtonContainer: {
+    paddingTop: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#2c2c2c',
+    borderTopWidth: 1,
+    borderTopColor: '#404040',
+  },
+  saveButton: {
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   formSection: {
     marginBottom: 24,
