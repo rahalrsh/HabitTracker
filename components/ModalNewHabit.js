@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Pressable, Modal, TextInput, ScrollView, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useState } from 'react';
 
 const { width } = Dimensions.get('window');
@@ -26,11 +26,86 @@ export const COLORS = [
   '#64748b', // slate
 ];
 
+export const ICONS = [
+    // Core / Progress
+    'circle-check',
+    'calendar',
+    'clock',
+    'fire',
+    'trophy',
+    'bullseye',
+    'chart-line',
+  
+    // Health & Fitness
+    'heart',
+    'shield-heart',
+    'droplet',
+    'utensils',
+    'bed',
+    'moon',
+    'sun',
+    'dumbbell',
+    'person-running',
+    'leaf',
+  
+    // Mind, Learning & Self-Care
+    'brain',
+    'book-open',
+    'graduation-cap',
+    'pen',
+    'face-smile',
+    'lotus-flower',
+    'seedling',
+  
+    // Lifestyle
+    'mug-saucer',
+    'house',
+    'music',
+    'paw',
+  
+    // Productivity & Work
+    'list-check',
+    'stopwatch',
+    'briefcase',
+    'laptop',
+    'envelope',
+    'bell',
+  
+    // Personal Care & Finance
+    'tooth',
+    'shower',
+    'wallet',
+  
+    // Environment & Values
+    'recycle',
+  
+    // Social
+    'users',
+
+    // Travel & Leisure
+    'plane',
+    'suitcase',
+    'map-location',
+    'camera',
+    'car',
+    'bicycle',
+
+    // Entertainment
+    'tv',
+    'gamepad',
+    'masks-theater',
+    'clapperboard',
+    'palette',
+];
+  
+  
+
 export default function ModalNewHabit({ visible, onClose }) {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[3]); // default to green
+  const [selectedIcon, setSelectedIcon] = useState(ICONS[0]); // default to circle-check
 
   return (
     <Modal
@@ -51,7 +126,7 @@ export default function ModalNewHabit({ visible, onClose }) {
             <View style={styles.modalHeader}>
               <Text className="text-2xl font-bold text-white text-center">New Habit</Text>
               <Pressable onPress={onClose} style={styles.closeButton}>
-                <AntDesign name="close" size={24} color="#ffffff" />
+                <FontAwesome6 name="xmark" size={24} color="#ffffff" />
               </Pressable>
             </View>
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
@@ -97,8 +172,31 @@ export default function ModalNewHabit({ visible, onClose }) {
                       ]}
                     >
                       {selectedColor === color && (
-                        <AntDesign name="check" size={16} color="#ffffff" />
+                        <FontAwesome6 name="check" size={16} color="#ffffff" />
                       )}
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.formSection}>
+                <Text className="text-white text-base font-semibold mb-3">Icon</Text>
+                <View style={styles.iconGrid}>
+                  {ICONS.map((icon, index) => (
+                    <Pressable
+                      key={index}
+                      onPress={() => setSelectedIcon(icon)}
+                      style={[
+                        styles.iconButton,
+                        selectedIcon === icon && styles.iconButtonSelected,
+                        (index % 5 === 4) && styles.iconButtonLastInRow
+                      ]}
+                    >
+                      <FontAwesome6 
+                        name={icon} 
+                        size={24} 
+                        color={selectedIcon === icon ? selectedColor : '#9ca3af'} 
+                      />
                     </Pressable>
                   ))}
                 </View>
@@ -175,6 +273,30 @@ const styles = StyleSheet.create({
   colorButtonSelected: {
     borderColor: '#ffffff',
     borderWidth: 3,
+  },
+  iconGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  iconButton: {
+    width: COLOR_BUTTON_SIZE,
+    height: COLOR_BUTTON_SIZE,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#404040',
+    backgroundColor: '#1c1c1c',
+    marginRight: COLOR_GAP,
+    marginBottom: COLOR_GAP,
+  },
+  iconButtonLastInRow: {
+    marginRight: 0,
+  },
+  iconButtonSelected: {
+    borderColor: '#ffffff',
+    borderWidth: 3,
+    backgroundColor: '#2c2c2c',
   },
 });
 
