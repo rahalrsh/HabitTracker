@@ -1,0 +1,26 @@
+# Update NodeJs
+
+> brew update
+> brew upgrade node
+> node -v
+
+
+# create expo app
+> npx create-expo-app --template blank HabitTracker
+> cd HabitTracker
+> npm start
+
+> npm run ios
+> npm run android
+> npm run web
+
+# install xcode from AppStore
+# pin Simulator.app
+
+
+# install NativeWind
+> npx expo install babel-preset-expo
+> npx expo install react-native-worklets
+
+Then do these steps
+> https://www.nativewind.dev/docs/getting-started/installation
