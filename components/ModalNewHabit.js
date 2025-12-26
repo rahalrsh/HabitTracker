@@ -120,6 +120,7 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
       color: selectedColor,
       icon: selectedIcon,
       createdAt: new Date().toISOString(),
+      completions: {}, // Track which dates the habit was completed
     };
 
     if (onSave) {
