@@ -7,6 +7,7 @@ import ModalNewHabit from '../components/ModalNewHabit';
 
 export default function HabitsScreen() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [habits, setHabits] = useState([]);
 
   const handleAddHabit = () => {
     setModalVisible(true);
@@ -14,6 +15,15 @@ export default function HabitsScreen() {
 
   const handleCloseModal = () => {
     setModalVisible(false);
+  }
+
+  const handleSaveHabit = (habit) => {
+    setHabits(prevHabits => {
+      const updatedHabits = [...prevHabits, habit];
+      console.log('Habit saved:', habit);
+    //   console.log('All habits:', updatedHabits);
+      return updatedHabits;
+    });
   }
 
   return (
@@ -32,6 +42,7 @@ export default function HabitsScreen() {
       <ModalNewHabit 
         visible={modalVisible}
         onClose={handleCloseModal}
+        onSave={handleSaveHabit}
       />
     </SafeAreaView>
   );

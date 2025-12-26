@@ -100,7 +100,7 @@ export const ICONS = [
   
   
 
-export default function ModalNewHabit({ visible, onClose }) {
+export default function ModalNewHabit({ visible, onClose, onSave }) {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -108,8 +108,30 @@ export default function ModalNewHabit({ visible, onClose }) {
   const [selectedIcon, setSelectedIcon] = useState(ICONS[0]); // default to circle-check
 
   const handleSave = () => {
-    // TODO: Save habit logic here
-    console.log('Saving habit:', { name, description, color: selectedColor, icon: selectedIcon });
+    if (!name.trim()) {
+      // Optional: You could add validation/error handling here
+      return;
+    }
+
+    const habit = {
+      id: Date.now().toString(), // Simple ID generation for now
+      name: name.trim(),
+      description: description.trim(),
+      color: selectedColor,
+      icon: selectedIcon,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (onSave) {
+      onSave(habit);
+    }
+
+    // Reset form
+    setName('');
+    setDescription('');
+    setSelectedColor(COLORS[3]);
+    setSelectedIcon(ICONS[0]);
+    
     onClose();
   };
 
