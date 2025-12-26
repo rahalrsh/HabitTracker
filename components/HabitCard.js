@@ -37,6 +37,29 @@ function isPastDate(year, month, day) {
   return date < today;
 }
 
+function getLast52Weeks() {
+  const weeks = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Start from 52 weeks ago (364 days ago)
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 363); // 364 days = 52 weeks, but we include today, so 363 days back
+  
+  // Organize days into weeks (7 days per week, 52 weeks)
+  for (let week = 0; week < 52; week++) {
+    const weekDays = [];
+    for (let day = 0; day < 7; day++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + (week * 7) + day);
+      weekDays.push(date);
+    }
+    weeks.push(weekDays);
+  }
+  
+  return weeks;
+}
+
 export default function HabitCard({ habit, onToggleDate }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -103,6 +126,46 @@ export default function HabitCard({ habit, onToggleDate }) {
             ) : null}
           </View>
         </View>
+      </View>
+
+      {/* 52 Week Contribution Graph */}
+      <View style={styles.contributionContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.contributionScrollContent}
+        >
+          <View style={styles.contributionGrid}>
+            {getLast52Weeks().map((week, weekIndex) => (
+              <View 
+                key={weekIndex} 
+                style={[
+                  styles.contributionWeek,
+                  weekIndex === 51 && styles.contributionWeekLast
+                ]}
+              >
+                {week.map((date, dayIndex) => {
+                  const year = date.getFullYear();
+                  const month = date.getMonth();
+                  const day = date.getDate();
+                  const dateKey = formatDateKey(year, month, day);
+                  const isCompleted = completions[dateKey] === true;
+                  
+                  return (
+                    <View
+                      key={dayIndex}
+                      style={[
+                        styles.contributionSquare,
+                        dayIndex === 6 && styles.contributionSquareLast,
+                        isCompleted && { backgroundColor: habit.color },
+                      ]}
+                    />
+                  );
+                })}
+              </View>
+            ))}
+          </View>
+        </ScrollView>
       </View>
 
       {/* Calendar Navigation */}
@@ -199,6 +262,32 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontSize: 14,
     marginTop: 2,
+  },
+  contributionContainer: {
+    marginBottom: 20,
+  },
+  contributionScrollContent: {
+    paddingRight: 16,
+  },
+  contributionGrid: {
+    flexDirection: 'row',
+  },
+  contributionWeek: {
+    flexDirection: 'column',
+    marginRight: 4,
+  },
+  contributionWeekLast: {
+    marginRight: 0,
+  },
+  contributionSquare: {
+    width: 12,
+    height: 12,
+    borderRadius: 3,
+    backgroundColor: '#404040',
+    marginBottom: 4,
+  },
+  contributionSquareLast: {
+    marginBottom: 0,
   },
   calendarHeader: {
     flexDirection: 'row',
