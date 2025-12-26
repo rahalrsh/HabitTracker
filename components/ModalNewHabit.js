@@ -54,7 +54,7 @@ export const ICONS = [
     'graduation-cap',
     'pen',
     'face-smile',
-    'lotus-flower',
+    'tree',
     'seedling',
   
     // Lifestyle
@@ -120,25 +120,24 @@ export default function ModalNewHabit({ visible, onClose }) {
       animationType="slide"
       onRequestClose={onClose}
     >
-      <Pressable 
-        style={styles.modalOverlay}
-        onPress={onClose}
-      >
+      <View style={styles.modalOverlay}>
+        {/* Tap outside to close */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+
+        {/* Content: swallow touches so they don't reach overlay */}
         <View style={[styles.modalContent, { paddingTop: insets.top }]}>
-          <Pressable 
-            onPress={(e) => e.stopPropagation()}
-            style={styles.modalInner}
-          >
+          <View style={styles.modalInner}>
             <View style={styles.modalHeader}>
               <Text className="text-2xl font-bold text-white text-center">New Habit</Text>
               <Pressable onPress={onClose} style={styles.closeButton}>
-                <FontAwesome6 name="xmark" size={24} color="#ffffff" />
+                <FontAwesome6 name="xmark" size={32} color="#ffffff" />
               </Pressable>
             </View>
             <ScrollView 
               style={styles.modalBody} 
-              contentContainerStyle={styles.scrollContent}
+              contentContainerStyle={[styles.scrollContent, { paddingBottom: 40 }]}
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
             >
               <View style={styles.formSection}>
                 <Text className="text-white text-base font-semibold mb-2">Name</Text>
@@ -220,9 +219,9 @@ export default function ModalNewHabit({ visible, onClose }) {
                 <Text className="text-white font-semibold text-base">Save</Text>
               </Pressable>
             </View>
-          </Pressable>
+          </View>
         </View>
-      </Pressable>
+      </View>
     </Modal>
   );
 }
