@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = [
@@ -64,8 +64,39 @@ export default function HabitCard({ habit, onToggleDate }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const scrollViewRef = useRef(null);
 
   const completions = habit.completions || {};
+
+  useEffect(() => {
+    // Scroll to the end (right) to show the most recent week
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({ animated: false });
+      }
+    }, 100);
+  }, []);
+
+  const handleMarkToday = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const day = today.getDate();
+    const dateKey = formatDateKey(year, month, day);
+    
+    if (onToggleDate) {
+      onToggleDate(habit.id, dateKey);
+    }
+  };
+
+  const isTodayCompleted = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const day = today.getDate();
+    const dateKey = formatDateKey(year, month, day);
+    return completions[dateKey] === true;
+  };
 
   const navigateMonth = (direction) => {
     if (direction === 'prev') {
@@ -126,11 +157,26 @@ export default function HabitCard({ habit, onToggleDate }) {
             ) : null}
           </View>
         </View>
+        <Pressable 
+          onPress={handleMarkToday}
+          style={[
+            styles.checkButton,
+            { borderColor: habit.color },
+            isTodayCompleted() && { backgroundColor: habit.color }
+          ]}
+        >
+          <FontAwesome6 
+            name="check" 
+            size={20} 
+            color={isTodayCompleted() ? "#ffffff" : habit.color} 
+          />
+        </Pressable>
       </View>
 
       {/* 52 Week Contribution Graph */}
       <View style={styles.contributionContainer}>
         <ScrollView 
+          ref={scrollViewRef}
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.contributionScrollContent}
@@ -221,9 +267,6 @@ export default function HabitCard({ habit, onToggleDate }) {
               >
                 {day}
               </Text>
-              {isCompleted && (
-                <FontAwesome6 name="check" size={12} color="#ffffff" style={styles.checkIcon} />
-              )}
             </Pressable>
           );
         })}
@@ -249,6 +292,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+  },
+  checkButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   icon: {
     marginRight: 12,
