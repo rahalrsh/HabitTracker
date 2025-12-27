@@ -106,10 +106,26 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
   const [description, setDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[3]); // default to green
   const [selectedIcon, setSelectedIcon] = useState(ICONS[0]); // default to circle-check
+  const [completionsPerDay, setCompletionsPerDay] = useState('1');
+
+  const handleCompletionsPerDayChange = (text) => {
+    // Only allow numeric input
+    const numericValue = text.replace(/[^0-9]/g, '');
+    if (numericValue === '' || (parseInt(numericValue) > 0)) {
+      setCompletionsPerDay(numericValue);
+    }
+  };
 
   const handleSave = () => {
     if (!name.trim()) {
       // Optional: You could add validation/error handling here
+      return;
+    }
+
+    const completionsPerDayValue = parseInt(completionsPerDay) || 1;
+    if (completionsPerDayValue <= 0) {
+      // Invalid value, default to 1
+      setCompletionsPerDay('1');
       return;
     }
 
@@ -119,8 +135,9 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
       description: description.trim(),
       color: selectedColor,
       icon: selectedIcon,
+      completionsPerDay: completionsPerDayValue,
       createdAt: new Date().toISOString(),
-      completions: {}, // Track which dates the habit was completed
+      completions: {}, // Track completion counts: { "2024-01-15": 3 } means 3 out of completionsPerDay completed
     };
 
     if (onSave) {
@@ -132,6 +149,7 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
     setDescription('');
     setSelectedColor(COLORS[3]);
     setSelectedIcon(ICONS[0]);
+    setCompletionsPerDay('1');
     
     onClose();
   };
@@ -185,6 +203,19 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
+                  className="text-white"
+                />
+              </View>
+
+              <View style={styles.formSection}>
+                <Text className="text-white text-base font-semibold mb-2">Completions per day</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="1"
+                  placeholderTextColor="#9ca3af"
+                  value={completionsPerDay}
+                  onChangeText={handleCompletionsPerDayChange}
+                  keyboardType="numeric"
                   className="text-white"
                 />
               </View>

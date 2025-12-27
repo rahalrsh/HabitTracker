@@ -37,6 +37,40 @@ function isPastDate(year, month, day) {
   return date < today;
 }
 
+// Helper function to interpolate color between grey and habit color based on completion percentage
+function getCompletionColor(completionCount, completionsPerDay, habitColor) {
+  if (completionCount === 0) {
+    return '#404040'; // Grey for no completion
+  }
+  
+  const percentage = completionCount / completionsPerDay;
+  
+  // Parse habit color (hex)
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
+  
+  const rgbToHex = (r, g, b) => {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  };
+  
+  const startColor = hexToRgb('#404040');
+  const endColor = hexToRgb(habitColor);
+  
+  if (!startColor || !endColor) return habitColor;
+  
+  const r = Math.round(startColor.r + (endColor.r - startColor.r) * percentage);
+  const g = Math.round(startColor.g + (endColor.g - startColor.g) * percentage);
+  const b = Math.round(startColor.b + (endColor.b - startColor.b) * percentage);
+  
+  return rgbToHex(r, g, b);
+}
+
 function getLast52Weeks() {
   const weeks = [];
   const today = new Date();
@@ -70,6 +104,15 @@ export default function HabitCard({ habit, onToggleDate }) {
   const touchRef = useRef({ startX: 0, startY: 0, startTime: 0, isScrolling: false });
 
   const completions = habit.completions || {};
+  const completionsPerDay = habit.completionsPerDay || 1;
+  
+  // Helper to get completion count, handling both old boolean and new number format
+  const getCompletionCount = (dateKey) => {
+    const value = completions[dateKey];
+    if (value === true) return 1; // Old format
+    if (typeof value === 'number') return value; // New format
+    return 0;
+  };
 
   useEffect(() => {
     Animated.timing(calendarHeight, {
@@ -100,13 +143,18 @@ export default function HabitCard({ habit, onToggleDate }) {
     }
   };
 
-  const isTodayCompleted = () => {
+  const getTodayCompletion = () => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
     const day = today.getDate();
     const dateKey = formatDateKey(year, month, day);
-    return completions[dateKey] === true;
+    return getCompletionCount(dateKey);
+  };
+
+  const isTodayCompleted = () => {
+    const todayCompletion = getTodayCompletion();
+    return todayCompletion >= completionsPerDay;
   };
 
   const navigateMonth = (direction) => {
@@ -190,15 +238,33 @@ export default function HabitCard({ habit, onToggleDate }) {
           }}
           style={[
             styles.checkButton,
-            { borderColor: habit.color },
-            isTodayCompleted() && { backgroundColor: habit.color }
+            { 
+              borderColor: habit.color,
+              backgroundColor: completionsPerDay === 1 
+                ? (isTodayCompleted() ? habit.color : 'transparent')
+                : getCompletionColor(getTodayCompletion(), completionsPerDay, habit.color)
+            }
           ]}
         >
-          <FontAwesome6 
-            name="check" 
-            size={20} 
-            color={isTodayCompleted() ? "#ffffff" : habit.color} 
-          />
+          {completionsPerDay > 1 ? (
+            getTodayCompletion() > 0 ? (
+              <Text style={styles.checkButtonText}>
+                {getTodayCompletion()}/{completionsPerDay}
+              </Text>
+            ) : (
+              <FontAwesome6 
+                name="check" 
+                size={20} 
+                color={habit.color} 
+              />
+            )
+          ) : (
+            <FontAwesome6 
+              name="check" 
+              size={20} 
+              color={isTodayCompleted() ? "#ffffff" : habit.color} 
+            />
+          )}
         </Pressable>
       </View>
 
@@ -250,7 +316,8 @@ export default function HabitCard({ habit, onToggleDate }) {
                   const month = date.getMonth();
                   const day = date.getDate();
                   const dateKey = formatDateKey(year, month, day);
-                  const isCompleted = completions[dateKey] === true;
+                  const completionCount = getCompletionCount(dateKey);
+                  const completionColor = getCompletionColor(completionCount, completionsPerDay, habit.color);
                   
                   return (
                     <View
@@ -258,7 +325,7 @@ export default function HabitCard({ habit, onToggleDate }) {
                       style={[
                         styles.contributionSquare,
                         dayIndex === 6 && styles.contributionSquareLast,
-                        isCompleted && { backgroundColor: habit.color },
+                        { backgroundColor: completionColor },
                       ]}
                     />
                   );
@@ -322,35 +389,41 @@ export default function HabitCard({ habit, onToggleDate }) {
                 return <View key={`empty-${index}`} style={styles.dateCell} />;
               }
 
-              const dateKey = formatDateKey(currentYear, currentMonth, day);
-              const isCompleted = completions[dateKey] === true;
-              const isTodayDate = isToday(currentYear, currentMonth, day);
-              const isPast = isPastDate(currentYear, currentMonth, day);
+          const dateKey = formatDateKey(currentYear, currentMonth, day);
+          const completionCount = getCompletionCount(dateKey);
+          const isCompleted = completionCount >= completionsPerDay;
+          const isTodayDate = isToday(currentYear, currentMonth, day);
+          const completionColor = getCompletionColor(completionCount, completionsPerDay, habit.color);
 
-              return (
-                <Pressable
-                  key={day}
-                  style={[
-                    styles.dateCell,
-                    isTodayDate && { borderWidth: 2, borderColor: habit.color },
-                    isCompleted && { backgroundColor: habit.color },
-                  ]}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    handleDatePress(day);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.dateText,
-                      isCompleted && styles.completedDateText,
-                      isTodayDate && !isCompleted && [styles.todayText, { color: habit.color }],
-                    ]}
-                  >
-                    {day}
-                  </Text>
-                </Pressable>
-              );
+          return (
+            <Pressable
+              key={day}
+              style={[
+                styles.dateCell,
+                isTodayDate && { borderWidth: 2, borderColor: habit.color },
+                completionCount > 0 && { backgroundColor: completionColor },
+              ]}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleDatePress(day);
+              }}
+            >
+              <Text
+                style={[
+                  styles.dateText,
+                  isCompleted && styles.completedDateText,
+                  isTodayDate && !isCompleted && [styles.todayText, { color: habit.color }],
+                ]}
+              >
+                {day}
+              </Text>
+              {completionsPerDay > 1 && completionCount > 0 && (
+                <Text style={styles.completionProgressText}>
+                  {completionCount}/{completionsPerDay}
+                </Text>
+              )}
+            </Pressable>
+          );
             })}
           </View>
         </View>
@@ -385,6 +458,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
+  },
+  checkButtonContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkButtonText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '600',
   },
   icon: {
     marginRight: 12,
@@ -474,6 +556,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 8,
     marginBottom: 4,
+    position: 'relative',
   },
   dateText: {
     color: '#ffffff',
@@ -486,6 +569,16 @@ const styles = StyleSheet.create({
   },
   todayText: {
     fontWeight: '600',
+  },
+  completionProgressText: {
+    color: '#ffffff',
+    fontSize: 8,
+    fontWeight: '600',
+    position: 'absolute',
+    bottom: 2,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
   },
   checkIcon: {
     position: 'absolute',

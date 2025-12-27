@@ -32,12 +32,21 @@ export default function HabitsScreen() {
       prevHabits.map(habit => {
         if (habit.id === habitId) {
           const newCompletions = { ...habit.completions };
-          // Toggle completion for the date
-          if (newCompletions[dateKey]) {
+          const completionsPerDay = habit.completionsPerDay || 1;
+          
+          // Handle both old format (boolean) and new format (number)
+          const currentValue = newCompletions[dateKey];
+          const currentCount = currentValue === true ? 1 : (typeof currentValue === 'number' ? currentValue : 0);
+          
+          // Increment count, reset to 0 if it reaches completionsPerDay
+          const newCount = (currentCount + 1) % (completionsPerDay + 1);
+          
+          if (newCount === 0) {
             delete newCompletions[dateKey];
           } else {
-            newCompletions[dateKey] = true;
+            newCompletions[dateKey] = newCount;
           }
+          
           return { ...habit, completions: newCompletions };
         }
         return habit;
