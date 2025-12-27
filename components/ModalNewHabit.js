@@ -100,13 +100,14 @@ export const ICONS = [
   
   
 
-export default function ModalNewHabit({ visible, onClose, onSave }) {
+export default function ModalNewHabit({ visible, onClose, onSave, navigation }) {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[3]); // default to green
   const [selectedIcon, setSelectedIcon] = useState(ICONS[0]); // default to circle-check
   const [completionsPerDay, setCompletionsPerDay] = useState('1');
+  const [reminders, setReminders] = useState([]);
 
   const handleCompletionsPerDayChange = (text) => {
     // Only allow numeric input
@@ -136,6 +137,7 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
       color: selectedColor,
       icon: selectedIcon,
       completionsPerDay: completionsPerDayValue,
+      reminders: reminders,
       createdAt: new Date().toISOString(),
       completions: {}, // Track completion counts: { "2024-01-15": 3 } means 3 out of completionsPerDay completed
     };
@@ -150,6 +152,7 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
     setSelectedColor(COLORS[3]);
     setSelectedIcon(ICONS[0]);
     setCompletionsPerDay('1');
+    setReminders([]);
     
     onClose();
   };
@@ -218,6 +221,32 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
                   keyboardType="numeric"
                   className="text-white"
                 />
+              </View>
+
+              <View style={styles.formSection}>
+                <Pressable
+                  onPress={() => {
+                    if (navigation) {
+                      navigation.navigate('ReminderScreen', {
+                        habit: {
+                          id: 'temp',
+                          name: name.trim() || 'New Habit',
+                          reminders: reminders,
+                        },
+                        onUpdateReminders: setReminders,
+                        habitColor: selectedColor,
+                      });
+                    }
+                  }}
+                  style={styles.remindersButton}
+                >
+                  <Text className="text-white text-base font-semibold">
+                    {reminders.length === 0 
+                      ? '0 Active reminders' 
+                      : `${reminders.length} Active reminder${reminders.length > 1 ? 's' : ''}`}
+                  </Text>
+                  <FontAwesome6 name="chevron-right" size={16} color="#9ca3af" />
+                </Pressable>
               </View>
 
               <View style={styles.formSection}>
@@ -385,6 +414,16 @@ const styles = StyleSheet.create({
     borderColor: '#ffffff',
     borderWidth: 3,
     backgroundColor: '#2c2c2c',
+  },
+  remindersButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#1c1c1c',
+    borderWidth: 1,
+    borderColor: '#404040',
+    borderRadius: 8,
+    padding: 12,
   },
 });
 

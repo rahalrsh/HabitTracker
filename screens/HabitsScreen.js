@@ -6,7 +6,7 @@ import { useState } from 'react';
 import ModalNewHabit from '../components/ModalNewHabit';
 import HabitCard from '../components/HabitCard';
 
-export default function HabitsScreen() {
+export default function HabitsScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [habits, setHabits] = useState([]);
 
@@ -61,7 +61,7 @@ export default function HabitsScreen() {
       {habits.length === 0 ? (
         <View style={styles.emptyState}>
           <AntDesign name="plus-circle" size={32} color="#22c55e" />
-          <Text className="text-xl font-bold text-green-500">No habit found</Text>
+          <Text className="text-xl font-bold text-green-500 mt-4">No habit found</Text>
           <Text className="text-md text-green-500">Create a new habit to get started</Text>
           <Pressable 
             onPress={handleAddHabit}
@@ -101,6 +101,7 @@ export default function HabitsScreen() {
         visible={modalVisible}
         onClose={handleCloseModal}
         onSave={handleSaveHabit}
+        navigation={navigation}
       />
     </SafeAreaView>
   );
