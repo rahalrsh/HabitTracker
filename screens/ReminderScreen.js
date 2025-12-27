@@ -8,18 +8,24 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function ReminderScreen({ route, navigation }) {
-  const { habit, onUpdateReminders, habitColor } = route.params;
-  const [reminders, setReminders] = useState(habit.reminders || []);
+  const { habit, habitColor, initialReminders } = route.params;
+  const [reminders, setReminders] = useState(initialReminders || habit.reminders || []);
   const [editingReminder, setEditingReminder] = useState(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
 
+  // Update route params when reminders change so parent can access them
   useEffect(() => {
-    // Update parent when reminders change
-    if (onUpdateReminders) {
-      onUpdateReminders(reminders);
-    }
-  }, [reminders]);
+    navigation.setParams({ updatedReminders: reminders });
+  }, [reminders, navigation]);
+  
+  // Ensure params are updated when navigating back
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      navigation.setParams({ updatedReminders: reminders });
+    });
+    return unsubscribe;
+  }, [reminders, navigation]);
 
   const handleAddReminder = () => {
     const newReminder = {

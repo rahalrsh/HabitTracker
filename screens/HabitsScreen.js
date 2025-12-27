@@ -3,19 +3,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useState } from 'react';
-import ModalNewHabit from '../components/ModalNewHabit';
 import HabitCard from '../components/HabitCard';
 
 export default function HabitsScreen({ navigation }) {
-  const [modalVisible, setModalVisible] = useState(false);
   const [habits, setHabits] = useState([]);
 
   const handleAddHabit = () => {
-    setModalVisible(true);
-  }
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
+    navigation.navigate('ModalStack', {
+      screen: 'ModalNewHabit',
+      params: {
+        onSave: handleSaveHabit,
+        onClose: () => {
+          navigation.goBack();
+        },
+      },
+    });
   }
 
   const handleSaveHabit = (habit) => {
@@ -96,13 +98,6 @@ export default function HabitsScreen({ navigation }) {
           </ScrollView>
         </View>
       )}
-
-      <ModalNewHabit 
-        visible={modalVisible}
-        onClose={handleCloseModal}
-        onSave={handleSaveHabit}
-        navigation={navigation}
-      />
     </SafeAreaView>
   );
 }

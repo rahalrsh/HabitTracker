@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Pressable, Modal, TextInput, ScrollView, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const { width } = Dimensions.get('window');
 const MODAL_PADDING = 40; // 20px on each side
@@ -100,14 +100,41 @@ export const ICONS = [
   
   
 
-export default function ModalNewHabit({ visible, onClose, onSave, navigation }) {
+export default function ModalNewHabit({ route, navigation }) {
+  const { onSave, onClose } = route.params || {};
   const insets = useSafeAreaInsets();
+  
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[3]); // default to green
   const [selectedIcon, setSelectedIcon] = useState(ICONS[0]); // default to circle-check
   const [completionsPerDay, setCompletionsPerDay] = useState('1');
   const [reminders, setReminders] = useState([]);
+
+  // Listen for navigation state changes to get updated reminders from ReminderScreen
+  useEffect(() => {
+    if (!navigation) return;
+    
+    const unsubscribe = navigation.addListener('state', () => {
+      const state = navigation.getState();
+      const reminderRoute = state?.routes?.find(r => r.name === 'ReminderScreen');
+      
+      // Only update if we have updatedReminders and we're not currently on ReminderScreen
+      const currentRoute = state?.routes?.[state.index];
+      if (currentRoute?.name !== 'ReminderScreen' && reminderRoute?.params?.updatedReminders) {
+        setReminders(reminderRoute.params.updatedReminders);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+    navigation.goBack();
+  };
 
   const handleCompletionsPerDayChange = (text) => {
     // Only allow numeric input
@@ -154,26 +181,20 @@ export default function ModalNewHabit({ visible, onClose, onSave, navigation }) 
     setCompletionsPerDay('1');
     setReminders([]);
     
-    onClose();
+    handleClose();
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        {/* Tap outside to close */}
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+    <View style={styles.modalOverlay}>
+      {/* Tap outside to close */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} pointerEvents="box-none" />
 
-        {/* Content: swallow touches so they don't reach overlay */}
-        <View style={[styles.modalContent, { paddingTop: insets.top }]}>
+      {/* Content: swallow touches so they don't reach overlay */}
+      <View style={[styles.modalContent, { paddingTop: insets.top }]}>
           <View style={styles.modalInner}>
             <View style={styles.modalHeader}>
               <Text className="text-2xl font-bold text-white text-center">New Habit</Text>
-              <Pressable onPress={onClose} style={styles.closeButton}>
+              <Pressable onPress={handleClose} style={styles.closeButton}>
                 <FontAwesome6 name="xmark" size={32} color="#ffffff" />
               </Pressable>
             </View>
@@ -225,16 +246,17 @@ export default function ModalNewHabit({ visible, onClose, onSave, navigation }) 
 
               <View style={styles.formSection}>
                 <Pressable
-                  onPress={() => {
-                    if (navigation) {
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    if (navigation && typeof navigation.navigate === 'function') {
                       navigation.navigate('ReminderScreen', {
                         habit: {
                           id: 'temp',
                           name: name.trim() || 'New Habit',
                           reminders: reminders,
                         },
-                        onUpdateReminders: setReminders,
                         habitColor: selectedColor,
+                        initialReminders: reminders,
                       });
                     }
                   }}
@@ -305,7 +327,6 @@ export default function ModalNewHabit({ visible, onClose, onSave, navigation }) 
           </View>
         </View>
       </View>
-    </Modal>
   );
 }
 

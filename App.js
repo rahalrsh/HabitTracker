@@ -3,7 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HabitsScreen from './screens/HabitsScreen';
-import ReminderScreen from './screens/ReminderScreen';
+import ModalStack from './screens/ModalStack';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,7 +18,14 @@ export default function App() {
           }}
         >
           <Stack.Screen name="HabitsScreen" component={HabitsScreen} />
-          <Stack.Screen name="ReminderScreen" component={ReminderScreen} />
+          <Stack.Screen 
+            name="ModalStack" 
+            component={ModalStack}
+            options={{
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
