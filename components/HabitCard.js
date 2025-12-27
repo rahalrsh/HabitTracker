@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Pressable, ScrollView, Animated } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useState, useRef, useEffect } from 'react';
 
@@ -64,9 +64,20 @@ export default function HabitCard({ habit, onToggleDate }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [isCalendarExpanded, setIsCalendarExpanded] = useState(false);
   const scrollViewRef = useRef(null);
+  const calendarHeight = useRef(new Animated.Value(0)).current;
+  const touchRef = useRef({ startX: 0, startY: 0, startTime: 0, isScrolling: false });
 
   const completions = habit.completions || {};
+
+  useEffect(() => {
+    Animated.timing(calendarHeight, {
+      toValue: isCalendarExpanded ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [isCalendarExpanded]);
 
   useEffect(() => {
     // Scroll to the end (right) to show the most recent week
@@ -137,11 +148,26 @@ export default function HabitCard({ habit, onToggleDate }) {
     days.push(day);
   }
 
+  const toggleCalendar = () => {
+    setIsCalendarExpanded(!isCalendarExpanded);
+  };
+
+  // Estimate calendar height (approximate)
+  const estimatedCalendarHeight = 350;
+
+  const calendarHeightInterpolation = calendarHeight.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, estimatedCalendarHeight],
+  });
+
   return (
     <View style={styles.card}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
+        <Pressable 
+          style={styles.headerLeft}
+          onPress={toggleCalendar}
+        >
           <FontAwesome6 
             name={habit.icon} 
             size={24} 
@@ -156,9 +182,12 @@ export default function HabitCard({ habit, onToggleDate }) {
               </Text>
             ) : null}
           </View>
-        </View>
+        </Pressable>
         <Pressable 
-          onPress={handleMarkToday}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleMarkToday();
+          }}
           style={[
             styles.checkButton,
             { borderColor: habit.color },
@@ -180,9 +209,35 @@ export default function HabitCard({ habit, onToggleDate }) {
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.contributionScrollContent}
+          scrollEventThrottle={16}
+          nestedScrollEnabled={true}
+          onScrollBeginDrag={() => {
+            touchRef.current.isScrolling = true;
+          }}
+          onMomentumScrollBegin={() => {
+            touchRef.current.isScrolling = true;
+          }}
+          onScrollEndDrag={() => {
+            // Reset after a delay to allow tap detection
+            setTimeout(() => {
+              touchRef.current.isScrolling = false;
+            }, 100);
+          }}
         >
-          <View style={styles.contributionGrid}>
-            {getLast52Weeks().map((week, weekIndex) => (
+          <Pressable
+            onPress={() => {
+              // Only toggle if not scrolling
+              setTimeout(() => {
+                if (!touchRef.current.isScrolling) {
+                  toggleCalendar();
+                }
+              }, 50);
+            }}
+            delayPressIn={100}
+            style={styles.contributionGridWrapper}
+          >
+            <View style={styles.contributionGrid}>
+              {getLast52Weeks().map((week, weekIndex) => (
               <View 
                 key={weekIndex} 
                 style={[
@@ -209,68 +264,97 @@ export default function HabitCard({ habit, onToggleDate }) {
                   );
                 })}
               </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </Pressable>
         </ScrollView>
       </View>
 
-      {/* Calendar Navigation */}
-      <View style={styles.calendarHeader}>
-        <Pressable onPress={() => navigateMonth('prev')} style={styles.navButton}>
-          <FontAwesome6 name="chevron-left" size={20} color="#ffffff" />
-        </Pressable>
-        <Text style={styles.monthYear}>
-          {MONTHS[currentMonth]} {currentYear}
-        </Text>
-        <Pressable onPress={() => navigateMonth('next')} style={styles.navButton}>
-          <FontAwesome6 name="chevron-right" size={20} color="#ffffff" />
-        </Pressable>
-      </View>
-
-      {/* Day labels */}
-      <View style={styles.daysRow}>
-        {DAYS.map((day) => (
-          <View key={day} style={styles.dayLabel}>
-            <Text style={styles.dayLabelText}>{day}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Calendar Grid */}
-      <View style={styles.calendarGrid}>
-        {days.map((day, index) => {
-          if (day === null) {
-            return <View key={`empty-${index}`} style={styles.dateCell} />;
+      {/* Calendar - Animated */}
+      <Animated.View 
+        style={[
+          styles.calendarContainer,
+          { 
+            maxHeight: calendarHeightInterpolation,
+            opacity: calendarHeight,
           }
-
-          const dateKey = formatDateKey(currentYear, currentMonth, day);
-          const isCompleted = completions[dateKey] === true;
-          const isTodayDate = isToday(currentYear, currentMonth, day);
-          const isPast = isPastDate(currentYear, currentMonth, day);
-
-          return (
-            <Pressable
-              key={day}
-              style={[
-                styles.dateCell,
-                isTodayDate && { borderWidth: 2, borderColor: habit.color },
-                isCompleted && { backgroundColor: habit.color },
-              ]}
-              onPress={() => handleDatePress(day)}
+        ]}
+      >
+        <View style={styles.calendarContent}>
+          {/* Calendar Navigation */}
+          <View style={styles.calendarHeader}>
+            <Pressable 
+              onPress={(e) => {
+                e.stopPropagation();
+                navigateMonth('prev');
+              }} 
+              style={styles.navButton}
             >
-              <Text
-                style={[
-                  styles.dateText,
-                  isCompleted && styles.completedDateText,
-                  isTodayDate && !isCompleted && [styles.todayText, { color: habit.color }],
-                ]}
-              >
-                {day}
-              </Text>
+              <FontAwesome6 name="chevron-left" size={20} color="#ffffff" />
             </Pressable>
-          );
-        })}
-      </View>
+            <Text style={styles.monthYear}>
+              {MONTHS[currentMonth]} {currentYear}
+            </Text>
+            <Pressable 
+              onPress={(e) => {
+                e.stopPropagation();
+                navigateMonth('next');
+              }} 
+              style={styles.navButton}
+            >
+              <FontAwesome6 name="chevron-right" size={20} color="#ffffff" />
+            </Pressable>
+          </View>
+
+          {/* Day labels */}
+          <View style={styles.daysRow}>
+            {DAYS.map((day) => (
+              <View key={day} style={styles.dayLabel}>
+                <Text style={styles.dayLabelText}>{day}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Calendar Grid */}
+          <View style={styles.calendarGrid}>
+            {days.map((day, index) => {
+              if (day === null) {
+                return <View key={`empty-${index}`} style={styles.dateCell} />;
+              }
+
+              const dateKey = formatDateKey(currentYear, currentMonth, day);
+              const isCompleted = completions[dateKey] === true;
+              const isTodayDate = isToday(currentYear, currentMonth, day);
+              const isPast = isPastDate(currentYear, currentMonth, day);
+
+              return (
+                <Pressable
+                  key={day}
+                  style={[
+                    styles.dateCell,
+                    isTodayDate && { borderWidth: 2, borderColor: habit.color },
+                    isCompleted && { backgroundColor: habit.color },
+                  ]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleDatePress(day);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.dateText,
+                      isCompleted && styles.completedDateText,
+                      isTodayDate && !isCompleted && [styles.todayText, { color: habit.color }],
+                    ]}
+                  >
+                    {day}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </Animated.View>
     </View>
   );
 }
@@ -321,6 +405,9 @@ const styles = StyleSheet.create({
   contributionScrollContent: {
     paddingRight: 16,
   },
+  contributionGridWrapper: {
+    flexDirection: 'row',
+  },
   contributionGrid: {
     flexDirection: 'row',
   },
@@ -340,6 +427,12 @@ const styles = StyleSheet.create({
   },
   contributionSquareLast: {
     marginBottom: 0,
+  },
+  calendarContainer: {
+    overflow: 'hidden',
+  },
+  calendarContent: {
+    paddingTop: 0,
   },
   calendarHeader: {
     flexDirection: 'row',
