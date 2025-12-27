@@ -247,7 +247,13 @@ export default function HabitCard({ habit, onToggleDate }) {
           ]}
         >
           {completionsPerDay > 1 ? (
-            getTodayCompletion() > 0 ? (
+            isTodayCompleted() ? (
+              <FontAwesome6 
+                name="check" 
+                size={20} 
+                color="#ffffff" 
+              />
+            ) : getTodayCompletion() > 0 ? (
               <Text style={styles.checkButtonText}>
                 {getTodayCompletion()}/{completionsPerDay}
               </Text>
