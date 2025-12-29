@@ -101,6 +101,123 @@ export const ICONS = [
     'palette',
 ];
 
+// Reminder Card Component with animation
+function ReminderCard({ reminder, selectedColor, isNewReminder, onToggleDay, onEditReminder, onDeleteReminder }) {
+  const fadeAnim = useRef(new Animated.Value(isNewReminder ? 0 : 1)).current;
+  const scaleAnim = useRef(new Animated.Value(isNewReminder ? 0.8 : 1)).current;
+
+  useEffect(() => {
+    if (isNewReminder) {
+      // Reset animations first
+      fadeAnim.setValue(0);
+      scaleAnim.setValue(0.8);
+      
+      // Animate new reminder: fade in and scale up with a subtle pulse
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 0.85,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.spring(scaleAnim, {
+            toValue: 1.03,
+            tension: 50,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            tension: 50,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    } else {
+      // Ensure non-new reminders are fully visible
+      fadeAnim.setValue(1);
+      scaleAnim.setValue(1);
+    }
+  }, [isNewReminder]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <Animated.View
+      style={[
+        styles.reminderCard,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        }
+      ]}
+    >
+      <View style={styles.reminderHeader}>
+        <Text style={styles.reminderTitle}>Reminder</Text>
+        <Pressable
+          onPress={() => {
+            Keyboard.dismiss();
+            onDeleteReminder(reminder.id);
+          }}
+          style={styles.deleteButton}
+        >
+          <FontAwesome6 name="trash" size={20} color="#ffffff" />
+        </Pressable>
+      </View>
+
+      {/* Day Selection */}
+      <View style={styles.daysContainer}>
+        {DAYS.map((day) => {
+          const isSelected = (reminder.days || []).includes(day);
+          return (
+            <View key={day} style={{ marginHorizontal: 4, marginVertical: 4 }}>
+              <Pressable
+                onPress={() => onToggleDay(reminder.id, day)}
+                style={[
+                  styles.dayButton,
+                  { backgroundColor: isSelected ? selectedColor : '#1c1c1c' },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dayButtonText,
+                    { color: isSelected ? '#ffffff' : '#9ca3af' },
+                  ]}
+                >
+                  {day}
+                </Text>
+              </Pressable>
+            </View>
+          );
+        })}
+      </View>
+
+      {/* Time Selection */}
+      <Pressable
+        onPress={() => {
+          Keyboard.dismiss();
+          onEditReminder(reminder);
+        }}
+        style={styles.timeContainer}
+      >
+        <FontAwesome6 name="clock" size={20} color="#ffffff" style={styles.clockIcon} />
+        <Text style={styles.timeText}>{reminder.time}</Text>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 // Helper function to round time up to nearest 30 minutes
 function roundTimeToNext30Minutes() {
   const now = new Date();
@@ -133,6 +250,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   const [editingReminderId, setEditingReminderId] = useState(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
+  const [newReminderAnimation, setNewReminderAnimation] = useState(null);
   
   const animatedHeight = useRef(new Animated.Value(0)).current;
 
@@ -186,12 +304,21 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
     // Get rounded time
     const defaultTime = roundTimeToNext30Minutes();
     
+    const newReminderId = Date.now().toString();
     const newReminder = {
-      id: Date.now().toString(),
+      id: newReminderId,
       time: defaultTime,
       days: [currentDay],
     };
-    setReminders([...reminders, newReminder]);
+    
+    // Add to the top of the list
+    setReminders([newReminder, ...reminders]);
+    
+    // Animate the new reminder
+    setNewReminderAnimation(newReminderId);
+    setTimeout(() => {
+      setNewReminderAnimation(null);
+    }, 600);
   };
 
   const handleDeleteReminder = (reminderId) => {
@@ -323,7 +450,8 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   };
 
   // Max height for reminders section (enough to accommodate multiple reminders)
-  const maxRemindersHeight = 800;
+  // Increased to prevent cutoff when there are many reminders
+  const maxRemindersHeight = 1000;
 
   return (
     <Modal
@@ -407,6 +535,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
               </View>
 
               <View style={styles.formSection}>
+                <Text className="text-white text-base font-semibold mb-2">Reminders</Text>
                 <Pressable
                   onPress={toggleRemindersSection}
                   style={styles.remindersButton}
@@ -434,70 +563,27 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
                   }}
                 >
                   <View style={styles.remindersExpandedContent}>
-                    {reminders.map((reminder, index) => (
-                      <View key={reminder.id} style={styles.reminderCard}>
-                        <View style={styles.reminderHeader}>
-                          <Text style={styles.reminderTitle}>Reminder #{index + 1}</Text>
-                          <Pressable
-                            onPress={() => {
-                              Keyboard.dismiss();
-                              handleDeleteReminder(reminder.id);
-                            }}
-                            style={styles.deleteButton}
-                          >
-                            <FontAwesome6 name="trash" size={20} color="#ffffff" />
-                          </Pressable>
-                        </View>
-
-                        {/* Day Selection */}
-                        <View style={styles.daysContainer}>
-                          {DAYS.map((day) => {
-                            const isSelected = (reminder.days || []).includes(day);
-                            return (
-                              <View key={day} style={{ marginHorizontal: 4, marginVertical: 4 }}>
-                                <Pressable
-                                  onPress={() => handleToggleDay(reminder.id, day)}
-                                  style={[
-                                    styles.dayButton,
-                                    { backgroundColor: isSelected ? selectedColor : '#1c1c1c' },
-                                  ]}
-                                >
-                                  <Text
-                                    style={[
-                                      styles.dayButtonText,
-                                      { color: isSelected ? '#ffffff' : '#9ca3af' },
-                                    ]}
-                                  >
-                                    {day}
-                                  </Text>
-                                </Pressable>
-                              </View>
-                            );
-                          })}
-                        </View>
-
-                        {/* Time Selection */}
-                        <Pressable
-                          onPress={() => {
-                            Keyboard.dismiss();
-                            handleEditReminder(reminder);
-                          }}
-                          style={styles.timeContainer}
-                        >
-                          <FontAwesome6 name="clock" size={20} color="#ffffff" style={styles.clockIcon} />
-                          <Text style={styles.timeText}>{reminder.time}</Text>
-                        </Pressable>
-                      </View>
-                    ))}
-
-                    {/* Add Reminder Button */}
+                    {/* Add Reminder Button - At the top */}
                     <Pressable
                       onPress={handleAddReminder}
-                      style={[styles.addButton, { borderColor: selectedColor }]}
+                      style={[styles.addButton, { backgroundColor: selectedColor }]}
                     >
-                      <FontAwesome6 name="plus" size={20} color={selectedColor} style={styles.addIcon} />
-                      <Text style={[styles.addButtonText, { color: selectedColor }]}>Add Reminder</Text>
+                      <FontAwesome6 name="plus" size={20} color="#ffffff" style={styles.addIcon} />
+                      <Text style={[styles.addButtonText, { color: '#ffffff' }]}>Add Reminder</Text>
                     </Pressable>
+
+                    {/* Reminders List */}
+                    {reminders.map((reminder) => (
+                      <ReminderCard
+                        key={reminder.id}
+                        reminder={reminder}
+                        selectedColor={selectedColor}
+                        isNewReminder={newReminderAnimation === reminder.id}
+                        onToggleDay={handleToggleDay}
+                        onEditReminder={handleEditReminder}
+                        onDeleteReminder={handleDeleteReminder}
+                      />
+                    ))}
                   </View>
                 </Animated.View>
               </View>
@@ -731,13 +817,14 @@ const styles = StyleSheet.create({
   },
   remindersExpandedContent: {
     paddingTop: 16,
+    paddingBottom: 16,
   },
   reminderCard: {
     backgroundColor: '#2c2c2c',
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    marginTop: 16,
   },
   reminderHeader: {
     flexDirection: 'row',
@@ -791,10 +878,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    // backgroundColor: '#1c1c1c',
     borderRadius: 8,
     padding: 16,
-    borderWidth: 1,
     marginTop: 8,
   },
   addIcon: {
