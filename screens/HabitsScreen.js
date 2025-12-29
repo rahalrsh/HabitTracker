@@ -2,14 +2,55 @@ import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import HabitCard from '../components/HabitCard';
 import ModalNewHabit from '../components/ModalNewHabit';
+
+const HABITS_STORAGE_KEY = '@habits_storage';
 
 export default function HabitsScreen({ navigation }) {
   const [habits, setHabits] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load habits from AsyncStorage on mount
+  useEffect(() => {
+    loadHabits();
+  }, []);
+
+  // Save habits to AsyncStorage whenever habits change
+  useEffect(() => {
+    if (!isLoading) {
+      saveHabits(habits);
+    }
+  }, [habits, isLoading]);
+
+  const loadHabits = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(HABITS_STORAGE_KEY);
+      if (jsonValue != null) {
+        const loadedHabits = JSON.parse(jsonValue);
+        setHabits(loadedHabits);
+        console.log('Habits loaded from storage:', loadedHabits.length);
+      }
+    } catch (e) {
+      console.error('Error loading habits:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveHabits = async (habitsToSave) => {
+    try {
+      const jsonValue = JSON.stringify(habitsToSave);
+      await AsyncStorage.setItem(HABITS_STORAGE_KEY, jsonValue);
+      console.log('Habits saved to storage:', habitsToSave.length);
+    } catch (e) {
+      console.error('Error saving habits:', e);
+    }
+  };
 
   const handleAddHabit = () => {
     setEditingHabit(null); // Clear editing habit for new habit
@@ -91,7 +132,11 @@ export default function HabitsScreen({ navigation }) {
         editingHabit={editingHabit}
       />
       
-      {habits.length === 0 ? (
+      {isLoading ? (
+        <View style={styles.emptyState}>
+          <Text className="text-xl font-bold text-green-500">Loading...</Text>
+        </View>
+      ) : habits.length === 0 ? (
         <View style={styles.emptyState}>
           <AntDesign name="plus-circle" size={32} color="#22c55e" />
           <Text className="text-xl font-bold text-green-500 mt-4">No habit found</Text>
