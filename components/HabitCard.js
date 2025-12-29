@@ -94,7 +94,7 @@ function getLast52Weeks() {
   return weeks;
 }
 
-export default function HabitCard({ habit, onToggleDate }) {
+export default function HabitCard({ habit, onToggleDate, onEdit, onDelete }) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -434,6 +434,28 @@ export default function HabitCard({ habit, onToggleDate }) {
           </View>
         </View>
       </Animated.View>
+
+      {/* Edit and Delete Buttons */}
+      <View style={styles.actionButtons}>
+        <View style={{ flex: 1, marginHorizontal: 4 }}>
+          <Pressable 
+            onPress={() => onEdit && onEdit(habit)}
+            style={[styles.actionButton, styles.editButton]}
+          >
+            <FontAwesome6 name="pen" size={16} color="#ffffff" style={styles.actionButtonIcon} />
+            <Text style={styles.actionButtonText}>Edit</Text>
+          </Pressable>
+        </View>
+        <View style={{ flex: 1, marginHorizontal: 4 }}>
+          <Pressable 
+            onPress={() => onDelete && onDelete(habit.id)}
+            style={[styles.actionButton, styles.deleteButton]}
+          >
+            <FontAwesome6 name="trash" size={16} color="#ffffff" style={styles.actionButtonIcon} />
+            <Text style={styles.actionButtonText}>Delete</Text>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
@@ -590,6 +612,35 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 2,
     right: 2,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    marginTop: 16,
+    marginHorizontal: -4,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  editButton: {
+    backgroundColor: '#3b82f6',
+  },
+  deleteButton: {
+    backgroundColor: '#ef4444',
+  },
+  actionButtonIcon: {
+    marginRight: 0,
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

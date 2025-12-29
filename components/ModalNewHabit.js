@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Pressable, Modal, TextInput, ScrollView, Dimensions, Animated, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get('window');
@@ -135,6 +135,23 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
   const [selectedTime, setSelectedTime] = useState(new Date());
   
   const animatedHeight = useRef(new Animated.Value(0)).current;
+
+  // Reset form state when modal closes
+  useEffect(() => {
+    if (!visible) {
+      // Reset all form fields when modal is closed
+      setName('');
+      setDescription('');
+      setSelectedColor(COLORS[3]);
+      setSelectedIcon(ICONS[0]);
+      setCompletionsPerDay('1');
+      setReminders([]);
+      setRemindersExpanded(false);
+      setEditingReminderId(null);
+      setShowTimePicker(false);
+      animatedHeight.setValue(0);
+    }
+  }, [visible, animatedHeight]);
 
   const toggleRemindersSection = () => {
     const toValue = remindersExpanded ? 0 : 1;
