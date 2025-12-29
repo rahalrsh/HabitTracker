@@ -29,7 +29,7 @@ Then do these steps
 
 
 
-=========== Deploying the app ==============
+================================= Build & Deploying the app ====================================
 
 ToCheck
 1 - Permissions: Define permission request text
@@ -53,11 +53,17 @@ Create Icons / Splash Icon
 Install EAS cli
 > npm install -g eas-cli
 
-EAS build
+EAS build (start)
 - https://docs.expo.dev/build/introduction/
 
 > eas login
 > eas build:configure      =>   adds an eas.json file to the project
+
+
+EAS build (Create a simulator build for ios)
+# in eas.json set => preview.ios.simulator:true
+> eas build -p ios --profile preview
+# then pick an ios bundle identifier
 
 
 

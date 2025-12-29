@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "HabitTracker",
-    "slug": "HabitTracker",
+    "name": "Habit",
+    "slug": "Habit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -14,9 +14,12 @@
     },
     "ios": {
       "supportsTablet": true,
+      "buildNumber": "1.0.0",
       "infoPlist": {
-        "NSUserNotificationsUsageDescription": "Get gentle reminders to stay on track with your habits."
-      }
+        "NSUserNotificationsUsageDescription": "Get gentle reminders to stay on track with your habits.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.rahalrsh.Habit"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +35,11 @@
     "plugins": [
       "@react-native-community/datetimepicker",
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "827b5eda-f0fe-4bdd-9122-b5bfab77d8dc"
+      }
+    }
   }
 }
