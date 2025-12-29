@@ -686,6 +686,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
               display="spinner"
               onChange={handleTimeChange}
               style={styles.picker}
+              textColor="#ffffff"
             />
           </View>
         </View>
@@ -699,6 +700,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
           is24Hour={false}
           display="default"
           onChange={handleTimeChange}
+          textColor="#ffffff"
         />
       )}
     </Modal>
