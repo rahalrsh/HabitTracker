@@ -4,20 +4,18 @@ import { StatusBar } from 'expo-status-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useState } from 'react';
 import HabitCard from '../components/HabitCard';
+import ModalNewHabit from '../components/ModalNewHabit';
 
 export default function HabitsScreen({ navigation }) {
   const [habits, setHabits] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleAddHabit = () => {
-    navigation.navigate('ModalStack', {
-      screen: 'ModalNewHabit',
-      params: {
-        onSave: handleSaveHabit,
-        onClose: () => {
-          navigation.goBack();
-        },
-      },
-    });
+    setModalVisible(true);
+  }
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
   }
 
   const handleSaveHabit = (habit) => {
@@ -59,6 +57,12 @@ export default function HabitsScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <StatusBar style="light" />
+      
+      <ModalNewHabit
+        visible={modalVisible}
+        onClose={handleCloseModal}
+        onSave={handleSaveHabit}
+      />
       
       {habits.length === 0 ? (
         <View style={styles.emptyState}>
