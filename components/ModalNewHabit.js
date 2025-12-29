@@ -734,6 +734,7 @@ const styles = StyleSheet.create({
   },
   reminderCard: {
     backgroundColor: '#2c2c2c',
+    borderWidth: 1,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -790,7 +791,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1c1c1c',
+    // backgroundColor: '#1c1c1c',
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
