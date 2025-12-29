@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Pressable, Modal, TextInput, ScrollView, Dimensions, Animated, Platform, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get('window');
@@ -438,9 +438,17 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
     onClose();
   };
 
-  // Max height for reminders section (enough to accommodate multiple reminders)
-  // Increased to prevent cutoff when there are many reminders
-  const maxRemindersHeight = 1000;
+  // Calculate dynamic height based on number of reminders
+  // Each reminder card is approximately 220px (padding + margin + content)
+  // Add Reminder button is approximately 68px (padding 16*2 + margin 8 + content ~28)
+  // Container padding is 32px (16 top + 16 bottom)
+  const maxRemindersHeight = useMemo(() => {
+    const baseHeight = 120; // Container padding (32) + Add Reminder button (68) + extra buffer
+    const reminderCardHeight = 260; // Approximate height per reminder card (generous estimate)
+    const calculatedHeight = baseHeight + (reminders.length * reminderCardHeight);
+    // Add generous extra padding for safety and ensure minimum height
+    return Math.max(calculatedHeight + 60, 200);
+  }, [reminders.length]);
 
   return (
     <Modal
