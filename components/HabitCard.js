@@ -435,27 +435,29 @@ export default function HabitCard({ habit, onToggleDate, onEdit, onDelete }) {
         </View>
       </Animated.View>
 
-      {/* Edit and Delete Buttons */}
-      <View style={styles.actionButtons}>
-        <View style={{ flex: 1, marginHorizontal: 4 }}>
-          <Pressable 
-            onPress={() => onEdit && onEdit(habit)}
-            style={[styles.actionButton, styles.editButton]}
-          >
-            <FontAwesome6 name="pen" size={16} color="#ffffff" style={styles.actionButtonIcon} />
-            <Text style={styles.actionButtonText}>Edit</Text>
-          </Pressable>
+      {/* Edit and Delete Buttons - Only show when calendar is expanded */}
+      {isCalendarExpanded && (
+        <View style={styles.actionButtons}>
+          <View style={{ flex: 1, marginHorizontal: 4 }}>
+            <Pressable 
+              onPress={() => onEdit && onEdit(habit)}
+              style={[styles.actionButton, styles.editButton]}
+            >
+              <FontAwesome6 name="pen" size={16} color="#ffffff" style={styles.actionButtonIcon} />
+              <Text style={styles.actionButtonText}>Edit</Text>
+            </Pressable>
+          </View>
+          <View style={{ flex: 1, marginHorizontal: 4 }}>
+            <Pressable 
+              onPress={() => onDelete && onDelete(habit.id)}
+              style={[styles.actionButton, styles.deleteButton]}
+            >
+              <FontAwesome6 name="trash" size={16} color="#ffffff" style={styles.actionButtonIcon} />
+              <Text style={styles.actionButtonText}>Delete</Text>
+            </Pressable>
+          </View>
         </View>
-        <View style={{ flex: 1, marginHorizontal: 4 }}>
-          <Pressable 
-            onPress={() => onDelete && onDelete(habit.id)}
-            style={[styles.actionButton, styles.deleteButton]}
-          >
-            <FontAwesome6 name="trash" size={16} color="#ffffff" style={styles.actionButtonIcon} />
-            <Text style={styles.actionButtonText}>Delete</Text>
-          </Pressable>
-        </View>
-      </View>
+      )}
     </View>
   );
 }

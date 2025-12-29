@@ -120,7 +120,7 @@ function roundTimeToNext30Minutes() {
   return `${displayHours}:${String(finalMinutes).padStart(2, '0')} ${period}`;
 }
 
-export default function ModalNewHabit({ visible, onClose, onSave }) {
+export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }) {
   const insets = useSafeAreaInsets();
   
   const [name, setName] = useState('');
@@ -136,22 +136,33 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
   
   const animatedHeight = useRef(new Animated.Value(0)).current;
 
-  // Reset form state when modal closes
+  // Populate form when modal opens (either with editingHabit or reset for new habit)
   useEffect(() => {
-    if (!visible) {
-      // Reset all form fields when modal is closed
-      setName('');
-      setDescription('');
-      setSelectedColor(COLORS[3]);
-      setSelectedIcon(ICONS[0]);
-      setCompletionsPerDay('1');
-      setReminders([]);
+    if (visible) {
+      if (editingHabit) {
+        // Populate form with existing habit data
+        setName(editingHabit.name || '');
+        setDescription(editingHabit.description || '');
+        setSelectedColor(editingHabit.color || COLORS[3]);
+        setSelectedIcon(editingHabit.icon || ICONS[0]);
+        setCompletionsPerDay(String(editingHabit.completionsPerDay || 1));
+        setReminders(editingHabit.reminders || []);
+      } else {
+        // Reset form for new habit
+        setName('');
+        setDescription('');
+        setSelectedColor(COLORS[3]);
+        setSelectedIcon(ICONS[0]);
+        setCompletionsPerDay('1');
+        setReminders([]);
+      }
+      // Always reset these states when modal opens
       setRemindersExpanded(false);
       setEditingReminderId(null);
       setShowTimePicker(false);
       animatedHeight.setValue(0);
     }
-  }, [visible, animatedHeight]);
+  }, [visible, editingHabit, animatedHeight]);
 
   const toggleRemindersSection = () => {
     const toValue = remindersExpanded ? 0 : 1;
@@ -276,15 +287,15 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
     }
 
     const habit = {
-      id: Date.now().toString(), // Simple ID generation for now
+      id: editingHabit ? editingHabit.id : Date.now().toString(), // Keep existing ID when editing
       name: name.trim(),
       description: description.trim(),
       color: selectedColor,
       icon: selectedIcon,
       completionsPerDay: completionsPerDayValue,
       reminders: reminders,
-      createdAt: new Date().toISOString(),
-      completions: {}, // Track completion counts: { "2024-01-15": 3 } means 3 out of completionsPerDay completed
+      createdAt: editingHabit ? editingHabit.createdAt : new Date().toISOString(), // Keep original createdAt when editing
+      completions: editingHabit ? editingHabit.completions : {}, // Keep existing completions when editing
     };
 
     if (onSave) {
@@ -322,7 +333,9 @@ export default function ModalNewHabit({ visible, onClose, onSave }) {
         <View style={[styles.modalContent, { paddingTop: insets.top }]}>
           <View style={styles.modalInner}>
             <View style={styles.modalHeader}>
-              <Text className="text-2xl font-bold text-white text-center">New Habit</Text>
+              <Text className="text-2xl font-bold text-white text-center">
+                {editingHabit ? 'Edit Habit' : 'New Habit'}
+              </Text>
               <Pressable onPress={onClose} style={styles.closeButton}>
                 <FontAwesome6 name="xmark" size={32} color="#ffffff" />
               </Pressable>

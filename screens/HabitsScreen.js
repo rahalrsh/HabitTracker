@@ -9,20 +9,46 @@ import ModalNewHabit from '../components/ModalNewHabit';
 export default function HabitsScreen({ navigation }) {
   const [habits, setHabits] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingHabit, setEditingHabit] = useState(null);
 
   const handleAddHabit = () => {
+    setEditingHabit(null); // Clear editing habit for new habit
     setModalVisible(true);
   }
 
   const handleCloseModal = () => {
     setModalVisible(false);
+    setEditingHabit(null); // Clear editing habit when modal closes
   }
 
   const handleSaveHabit = (habit) => {
     setHabits(prevHabits => {
-      const updatedHabits = [...prevHabits, habit];
-      console.log('Habit saved:', habit);
-    //   console.log('All habits:', updatedHabits);
+      if (editingHabit) {
+        // Update existing habit
+        const updatedHabits = prevHabits.map(h => 
+          h.id === habit.id ? habit : h
+        );
+        console.log('Habit updated:', habit);
+        return updatedHabits;
+      } else {
+        // Add new habit
+        const updatedHabits = [...prevHabits, habit];
+        console.log('Habit saved:', habit);
+        return updatedHabits;
+      }
+    });
+    setEditingHabit(null);
+  }
+
+  const handleEditHabit = (habit) => {
+    setEditingHabit(habit);
+    setModalVisible(true);
+  }
+
+  const handleDeleteHabit = (habitId) => {
+    setHabits(prevHabits => {
+      const updatedHabits = prevHabits.filter(h => h.id !== habitId);
+      console.log('Habit deleted:', habitId);
       return updatedHabits;
     });
   }
@@ -62,6 +88,7 @@ export default function HabitsScreen({ navigation }) {
         visible={modalVisible}
         onClose={handleCloseModal}
         onSave={handleSaveHabit}
+        editingHabit={editingHabit}
       />
       
       {habits.length === 0 ? (
@@ -97,6 +124,8 @@ export default function HabitsScreen({ navigation }) {
                 key={habit.id}
                 habit={habit}
                 onToggleDate={handleToggleDate}
+                onEdit={handleEditHabit}
+                onDelete={handleDeleteHabit}
               />
             ))}
           </ScrollView>
