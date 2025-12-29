@@ -29,7 +29,14 @@ export async function requestNotificationPermissions() {
   let finalStatus = existingStatus;
   
   if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status } = await Notifications.requestPermissionsAsync({
+      ios: {
+        allowAlert: true,
+        allowBadge: true,
+        allowSound: true,
+        allowAnnouncements: false,
+      },
+    });
     finalStatus = status;
   }
   

@@ -13,7 +13,10 @@
       "backgroundColor": "#1c1c1c"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "Get gentle reminders to stay on track with your habits."
+      }
     },
     "android": {
       "adaptiveIcon": {
