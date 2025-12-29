@@ -2,18 +2,12 @@ import "./global.css"
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useEffect } from 'react';
 import HabitsScreen from './screens/HabitsScreen';
-import { initializeNotifications } from './utils/notifications';
+import ModalStack from './screens/ModalStack';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  useEffect(() => {
-    // Request notification permissions on app startup
-    initializeNotifications();
-  }, []);
-
   return (
     <SafeAreaProvider>
       <NavigationContainer>
@@ -24,6 +18,14 @@ export default function App() {
           }}
         >
           <Stack.Screen name="HabitsScreen" component={HabitsScreen} />
+          <Stack.Screen 
+            name="ModalStack" 
+            component={ModalStack}
+            options={{
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

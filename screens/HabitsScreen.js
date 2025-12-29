@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import HabitCard from '../components/HabitCard';
 import ModalNewHabit from '../components/ModalNewHabit';
-import { scheduleHabitNotifications, cancelAllHabitNotifications } from '../utils/notifications';
 
 const HABITS_STORAGE_KEY = '@habits_storage';
 
@@ -16,26 +15,10 @@ export default function HabitsScreen({ navigation }) {
   const [editingHabit, setEditingHabit] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load habits from AsyncStorage on mount and reschedule notifications
+  // Load habits from AsyncStorage on mount
   useEffect(() => {
     loadHabits();
   }, []);
-
-  // Reschedule notifications when habits are loaded (in case app was reinstalled/notifications cleared)
-  useEffect(() => {
-    if (!isLoading && habits.length > 0) {
-      // Reschedule all notifications for all habits
-      const rescheduleNotifications = async () => {
-        for (const habit of habits) {
-          if (habit.reminders && habit.reminders.length > 0) {
-            await scheduleHabitNotifications(habit);
-          }
-        }
-      };
-      rescheduleNotifications();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]); // Only run once when loading completes
 
   // Save habits to AsyncStorage whenever habits change
   useEffect(() => {
@@ -79,10 +62,7 @@ export default function HabitsScreen({ navigation }) {
     setEditingHabit(null); // Clear editing habit when modal closes
   }
 
-  const handleSaveHabit = async (habit) => {
-    // Schedule notifications for the habit's reminders
-    await scheduleHabitNotifications(habit);
-    
+  const handleSaveHabit = (habit) => {
     setHabits(prevHabits => {
       if (editingHabit) {
         // Update existing habit
@@ -106,10 +86,7 @@ export default function HabitsScreen({ navigation }) {
     setModalVisible(true);
   }
 
-  const handleDeleteHabit = async (habitId) => {
-    // Cancel all notifications for this habit
-    await cancelAllHabitNotifications(habitId);
-    
+  const handleDeleteHabit = (habitId) => {
     setHabits(prevHabits => {
       const updatedHabits = prevHabits.filter(h => h.id !== habitId);
       console.log('Habit deleted:', habitId);
