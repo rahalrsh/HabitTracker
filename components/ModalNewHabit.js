@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable, Modal, TextInput, ScrollView, Dimensions, Animated, Platform } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Modal, TextInput, ScrollView, Dimensions, Animated, Platform, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useState, useRef, useEffect } from 'react';
@@ -165,6 +165,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   }, [visible, editingHabit, animatedHeight]);
 
   const toggleRemindersSection = () => {
+    Keyboard.dismiss();
     const toValue = remindersExpanded ? 0 : 1;
     setRemindersExpanded(!remindersExpanded);
     
@@ -176,6 +177,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   };
 
   const handleAddReminder = () => {
+    Keyboard.dismiss();
     // Get current day
     const today = new Date().getDay();
     const dayIndex = today === 0 ? 6 : today - 1; // Sunday (0) becomes 6, Monday (1) becomes 0, etc.
@@ -197,6 +199,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   };
 
   const handleToggleDay = (reminderId, day) => {
+    Keyboard.dismiss();
     setReminders(reminders.map(reminder => {
       if (reminder.id === reminderId) {
         const days = reminder.days || [];
@@ -210,6 +213,9 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   };
 
   const handleEditReminder = (reminder) => {
+    // Dismiss keyboard before opening time picker
+    Keyboard.dismiss();
+    
     // Parse time string to Date object for picker
     const [timePart, period] = reminder.time.split(' ');
     const [hours, minutes] = timePart.split(':').map(Number);
@@ -274,6 +280,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   };
 
   const handleSave = () => {
+    Keyboard.dismiss();
     if (!name.trim()) {
       // Optional: You could add validation/error handling here
       return;
@@ -327,7 +334,14 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
     >
       <View style={styles.modalOverlay}>
         {/* Tap outside to close */}
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} pointerEvents="box-none" />
+        <Pressable 
+          style={StyleSheet.absoluteFill} 
+          onPress={() => {
+            Keyboard.dismiss();
+            onClose();
+          }} 
+          pointerEvents="box-none" 
+        />
 
         {/* Content: swallow touches so they don't reach overlay */}
         <View style={[styles.modalContent, { paddingTop: insets.top }]}>
@@ -336,7 +350,13 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
               <Text className="text-2xl font-bold text-white text-center">
                 {editingHabit ? 'Edit Habit' : 'New Habit'}
               </Text>
-              <Pressable onPress={onClose} style={styles.closeButton}>
+              <Pressable 
+                onPress={() => {
+                  Keyboard.dismiss();
+                  onClose();
+                }} 
+                style={styles.closeButton}
+              >
                 <FontAwesome6 name="xmark" size={32} color="#ffffff" />
               </Pressable>
             </View>
@@ -419,7 +439,10 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
                         <View style={styles.reminderHeader}>
                           <Text style={styles.reminderTitle}>Reminder #{index + 1}</Text>
                           <Pressable
-                            onPress={() => handleDeleteReminder(reminder.id)}
+                            onPress={() => {
+                              Keyboard.dismiss();
+                              handleDeleteReminder(reminder.id);
+                            }}
                             style={styles.deleteButton}
                           >
                             <FontAwesome6 name="trash" size={20} color="#ffffff" />
@@ -455,7 +478,10 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
 
                         {/* Time Selection */}
                         <Pressable
-                          onPress={() => handleEditReminder(reminder)}
+                          onPress={() => {
+                            Keyboard.dismiss();
+                            handleEditReminder(reminder);
+                          }}
                           style={styles.timeContainer}
                         >
                           <FontAwesome6 name="clock" size={20} color="#ffffff" style={styles.clockIcon} />
@@ -482,7 +508,10 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
                   {COLORS.map((color, index) => (
                     <Pressable
                       key={index}
-                      onPress={() => setSelectedColor(color)}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setSelectedColor(color);
+                      }}
                       style={[
                         styles.colorButton,
                         { backgroundColor: color },
@@ -504,7 +533,10 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
                   {ICONS.map((icon, index) => (
                     <Pressable
                       key={index}
-                      onPress={() => setSelectedIcon(icon)}
+                      onPress={() => {
+                        Keyboard.dismiss();
+                        setSelectedIcon(icon);
+                      }}
                       style={[
                         styles.iconButton,
                         selectedIcon === icon && styles.iconButtonSelected,
@@ -523,7 +555,10 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
             </ScrollView>
             <View style={[styles.saveButtonContainer, { paddingBottom: insets.bottom }]}>
               <Pressable 
-                onPress={handleSave}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  handleSave();
+                }}
                 style={[styles.saveButton, { backgroundColor: selectedColor }]}
               >
                 <Text className="text-white font-semibold text-base">Save</Text>
