@@ -119,41 +119,21 @@ function ReminderCard({ reminder, selectedColor, isNewReminder, onToggleDay, onE
     if (isNewReminder) {
       // Reset animations first
       fadeAnim.setValue(0);
-      scaleAnim.setValue(0.8);
+      scaleAnim.setValue(0.9);
       
-      // Animate new reminder: fade in and scale up with a subtle pulse
+      // Smooth fade in and scale up animation
       Animated.parallel([
-        Animated.sequence([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(fadeAnim, {
-            toValue: 0.85,
-            duration: 150,
-            useNativeDriver: true,
-          }),
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 150,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.sequence([
-          Animated.spring(scaleAnim, {
-            toValue: 1.03,
-            tension: 50,
-            friction: 7,
-            useNativeDriver: true,
-          }),
-          Animated.spring(scaleAnim, {
-            toValue: 1,
-            tension: 50,
-            friction: 7,
-            useNativeDriver: true,
-          }),
-        ]),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 60,
+          friction: 8,
+          useNativeDriver: true,
+        }),
       ]).start();
     } else {
       // Ensure non-new reminders are fully visible
