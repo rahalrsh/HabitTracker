@@ -398,7 +398,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
   const handleSave = () => {
     Keyboard.dismiss();
     if (!name.trim()) {
-      // Optional: You could add validation/error handling here
+      // Don't save if name is empty
       return;
     }
 
@@ -631,10 +631,19 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
             <View style={[styles.saveButtonContainer, { paddingBottom: insets.bottom }]}>
               <Pressable 
                 onPress={() => {
-                  Keyboard.dismiss();
-                  handleSave();
+                  if (name.trim()) {
+                    Keyboard.dismiss();
+                    handleSave();
+                  }
                 }}
-                style={[styles.saveButton, { backgroundColor: selectedColor }]}
+                disabled={!name.trim()}
+                style={[
+                  styles.saveButton, 
+                  { 
+                    backgroundColor: name.trim() ? selectedColor : '#404040',
+                    opacity: name.trim() ? 1 : 0.5,
+                  }
+                ]}
               >
                 <Text className="text-white font-semibold text-base">Save</Text>
               </Pressable>
@@ -745,7 +754,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textArea: {
-    minHeight: 100,
+    minHeight: 80,
     paddingTop: 12,
   },
   colorGrid: {
