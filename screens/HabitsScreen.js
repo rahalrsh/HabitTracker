@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import HabitCard from '../components/HabitCard';
 import ModalNewHabit from '../components/ModalNewHabit';
+import { scheduleHabitNotifications, cancelAllHabitNotifications } from '../utils/notifications';
 
 const HABITS_STORAGE_KEY = '@habits_storage';
 
@@ -34,6 +35,13 @@ export default function HabitsScreen({ navigation }) {
         const loadedHabits = JSON.parse(jsonValue);
         setHabits(loadedHabits);
         console.log('Habits loaded from storage:', loadedHabits.length);
+        
+        // Reschedule notifications for all loaded habits
+        for (const habit of loadedHabits) {
+          if (habit.reminders && habit.reminders.length > 0) {
+            await scheduleHabitNotifications(habit);
+          }
+        }
       }
     } catch (e) {
       console.error('Error loading habits:', e);
@@ -62,7 +70,10 @@ export default function HabitsScreen({ navigation }) {
     setEditingHabit(null); // Clear editing habit when modal closes
   }
 
-  const handleSaveHabit = (habit) => {
+  const handleSaveHabit = async (habit) => {
+    // Schedule notifications for the habit's reminders
+    await scheduleHabitNotifications(habit);
+    
     setHabits(prevHabits => {
       if (editingHabit) {
         // Update existing habit
@@ -86,7 +97,10 @@ export default function HabitsScreen({ navigation }) {
     setModalVisible(true);
   }
 
-  const handleDeleteHabit = (habitId) => {
+  const handleDeleteHabit = async (habitId) => {
+    // Cancel all notifications for this habit
+    await cancelAllHabitNotifications(habitId);
+    
     setHabits(prevHabits => {
       const updatedHabits = prevHabits.filter(h => h.id !== habitId);
       console.log('Habit deleted:', habitId);

@@ -7,7 +7,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 const { width } = Dimensions.get('window');
 const MODAL_PADDING = 40; // 20px on each side
 const COLOR_GAP = 12;
-const COLOR_BUTTON_SIZE = (width - MODAL_PADDING - (COLOR_GAP * 4)) / 5; // 5 columns with 4 gaps between them
+const COLORS_PER_ROW = 7; // 7 colors per row for 3 rows (21 colors total)
+const COLOR_BUTTON_SIZE = (width - MODAL_PADDING - (COLOR_GAP * (COLORS_PER_ROW - 1))) / COLORS_PER_ROW;
+const ICONS_PER_ROW = 5; // 5 icons per row
+const ICON_BUTTON_SIZE = (width - MODAL_PADDING - (COLOR_GAP * (ICONS_PER_ROW - 1))) / ICONS_PER_ROW;
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -27,6 +30,12 @@ export const COLORS = [
   '#ec4899', // pink
   '#f43f5e', // rose
   '#64748b', // slate
+  '#84cc16', // lime
+  '#f59e0b', // amber
+  '#0ea5e9', // sky blue
+  '#be185d', // deep pink
+  '#fb7185', // coral
+  '#92400e', // brown
 ];
 
 export const ICONS = [
@@ -602,7 +611,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
                         styles.colorButton,
                         { backgroundColor: color },
                         selectedColor === color && styles.colorButtonSelected,
-                        (index % 5 === 4) && styles.colorButtonLastInRow
+                        (index % COLORS_PER_ROW === COLORS_PER_ROW - 1) && styles.colorButtonLastInRow
                       ]}
                     >
                       {selectedColor === color && (
@@ -626,7 +635,7 @@ export default function ModalNewHabit({ visible, onClose, onSave, editingHabit }
                       style={[
                         styles.iconButton,
                         selectedIcon === icon && styles.iconButtonSelected,
-                        (index % 5 === 4) && styles.iconButtonLastInRow
+                        (index % ICONS_PER_ROW === ICONS_PER_ROW - 1) && styles.iconButtonLastInRow
                       ]}
                     >
                       <FontAwesome6 
@@ -786,8 +795,8 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   iconButton: {
-    width: COLOR_BUTTON_SIZE,
-    height: COLOR_BUTTON_SIZE,
+    width: ICON_BUTTON_SIZE,
+    height: ICON_BUTTON_SIZE,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
