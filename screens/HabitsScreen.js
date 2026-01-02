@@ -146,6 +146,31 @@ export default function HabitsScreen({ navigation }) {
         editingHabit={editingHabit}
       />
       
+      {/* Header - Always visible */}
+      {!isLoading && (
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>
+            {habits.length === 0 ? 'My Habits' : 'My Habits'}
+          </Text>
+          <View style={styles.headerButtons}>
+            <Pressable 
+              onPress={() => navigation.navigate('SettinsScreen')}
+              style={styles.settingsButton}
+            >
+              <AntDesign name="setting" size={24} color="#9ca3af" />
+            </Pressable>
+            {habits.length > 0 && (
+              <Pressable 
+                onPress={handleAddHabit}
+                style={styles.addButton}
+              >
+                <AntDesign name="plus" size={24} color="#22c55e" />
+              </Pressable>
+            )}
+          </View>
+        </View>
+      )}
+
       {isLoading ? (
         <View style={styles.emptyState}>
           <Text className="text-xl font-bold text-green-500">Loading...</Text>
@@ -164,15 +189,6 @@ export default function HabitsScreen({ navigation }) {
         </View>
       ) : (
         <View style={styles.habitsContainer}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>My Habits</Text>
-            <Pressable 
-              onPress={handleAddHabit}
-              style={styles.addButton}
-            >
-              <AntDesign name="plus" size={24} color="#22c55e" />
-            </Pressable>
-          </View>
           <ScrollView 
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
@@ -219,6 +235,19 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2c2c2c',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   addButton: {
     width: 40,

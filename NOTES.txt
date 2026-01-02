@@ -67,6 +67,9 @@ EAS build (Create a simulator build for ios)
 
 
 
+EAS build (Create a Production build for ios)
+
+
 
 
 
