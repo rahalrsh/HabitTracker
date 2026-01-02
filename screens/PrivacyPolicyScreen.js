@@ -8,6 +8,10 @@ export default function PrivacyPolicyScreen({ navigation }) {
     Linking.openURL('mailto:rahalrsh@gmail.com');
   };
 
+  const handleViewOnlinePress = () => {
+    Linking.openURL('https://rahalrsh.github.io/HabitTracker/privacy_policy/');
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <StatusBar style="light" />
@@ -29,6 +33,14 @@ export default function PrivacyPolicyScreen({ navigation }) {
         <View style={styles.content}>
           <Text style={styles.title}>Privacy Policy – "Habit" App</Text>
           <Text style={styles.muted}>Last updated: January 1, 2026</Text>
+          
+          <Pressable 
+            onPress={handleViewOnlinePress}
+            style={styles.onlineButton}
+          >
+            <AntDesign name="link" size={16} color="#3b82f6" />
+            <Text style={styles.onlineButtonText}>View Privacy Policy Online</Text>
+          </Pressable>
 
           <Text style={styles.heading}>Summary</Text>
           <Text style={styles.paragraph}>
@@ -147,7 +159,24 @@ const styles = StyleSheet.create({
   muted: {
     color: '#6b7280',
     fontSize: 14,
+    marginBottom: 16,
+  },
+  onlineButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2c2c2c',
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 32,
+    borderWidth: 1,
+    borderColor: '#3b82f6',
+  },
+  onlineButtonText: {
+    color: '#3b82f6',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   heading: {
     color: '#ffffff',
