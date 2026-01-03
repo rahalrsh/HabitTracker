@@ -43,6 +43,10 @@ ToCheck
 	- iOS Distribution cert
 	- Create a app on App Store Connect
 	- Provisioning profile
+7 - 
+	- Up to 3 app previews and 10 screenshots here
+	- only the first 3 will be used on the app installation sheets
+	- 1242 × 2688px
 
 
 Use "Expo Application Services"
@@ -98,7 +102,7 @@ Create a app on App Store Connect
 		> Select app Capabilities (ex: push notifications)
 		- click Continue
 		- click Register
-	- add SKU (ex: HabitApp) - this is an internal name
+	- add SKU (ex: HabitApp OR com.rahalrsh.....) - this is an internal name
 	- User Access > Full Access
 	- Create
 
@@ -155,6 +159,11 @@ Force EAS to use the local credentials.json file
 EAS build (Create a Production build for ios)
 > eas build -p ios
 # login to apple account
+# this will generate a build file (.ipa) locally
+
+
+Upload this build file to App store connect (this will just upload the file, wont pubish to App Store Yet)
+> eas submit -p ios --path /path/to/your-app.ipa
 
 
 
