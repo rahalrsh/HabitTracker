@@ -36,6 +36,13 @@ ToCheck
 2 - App name and Identifier - set up visible app name, app version, unique app id
 3 - Env vars - expo can manage env vars like API Keys
 4 - Icon and splash screen
+5 - Privacy Policy 
+	- In app Settings > Privacy Policy
+	- Public URL (Github pages)
+6 - Generate certs inside Apple Developer Dashboard
+	- iOS Distribution cert
+	- Create a app on App Store Connect
+	- Provisioning profile
 
 
 Use "Expo Application Services"
@@ -45,6 +52,7 @@ https://docs.expo.dev/
 Update app.json
 - set Name, Slug, ios.buildNumber... etc
 
+
 Create Icons / Splash Icon
 - 1024 x 1024 	- for both icon and splash screen icon
 - 48x48  		- for favicon
@@ -52,6 +60,7 @@ Create Icons / Splash Icon
 
 Install EAS cli
 > npm install -g eas-cli
+
 
 EAS build (start)
 - https://docs.expo.dev/build/introduction/
@@ -67,7 +76,85 @@ EAS build (Create a simulator build for ios)
 
 
 
+Generate "iOS Distribution cert"
+- Go to https://developer.apple.com/account
+- Go to certificates > certificates
+- Upload existing cert or create a new one (click Learn More)
+- Click continue
+- Download the certificates from that screen
+
+- create a sub folder /certs/ios in the app repo
+- upload the certs there
+- add certs to .gitignore
+
+
+Create a app on App Store Connect
+- Go to https://developer.apple.com/account
+- Go to Apps > Add Apps
+	- Add a Name (Habit Tracker & Reminders)
+	- Pick platforms - ios
+	- Pick Bundle Id 
+		> Register a new bundle id -> use from app.json "bundleIdentifier" field
+		> Select app Capabilities (ex: push notifications)
+		- click Continue
+		- click Register
+	- add SKU (ex: HabitApp) - this is an internal name
+	- User Access > Full Access
+	- Create
+
+
+Generate Provisioning profile
+- Go to https://developer.apple.com/account
+- Go to certificates > profiles
+- Click Create Profile
+- Pick Distribution > App Store Connect option
+- continue
+- Pick Select an App ID
+- continue
+- Select Distribution Certificate created before (*.cer)
+- continue
+- Add a Provisioning profile name (ex: Habit App)
+- Generate Profile
+- Download the Profile
+
+- go to sub folder /certs/ios in the app repo
+- upload the Profile there
+
+
+Execute the certificate file in /certs/ios/*.cer (so it gets added to KeyChain)
+- Open in Finder
+- Double click *.cer 
+- Selecet - KeyChain: iCloud
+- Click Add (add to keychain)
+- in keychain > search for that cert
+- go to my certificates
+- Right click > export as a .p12 file to /certs/ios
+- Make sure to set a password
+
+
+Now we have 3 files in /certs/ios
+Make EAS aware of those files (Follow: https://docs.expo.dev/app-signing/local-credentials/)
+ - credentials.json file at the root
+ - add the below to credentials.json
+ - Make sure to REPLACE ***** with correct file names & password
+ {
+  "ios": {
+    "provisioningProfilePath": "certs/ios/*****.mobileprovision",
+    "distributionCertificate": {
+      "path": "certs/ios/*****.p12",
+      "password": "/*****"
+    }
+  }
+}
+
+Force EAS to use the local credentials.json file
+- in eas.json > build.production  >   "credentialsSource": "local"
+
+
+
 EAS build (Create a Production build for ios)
+> eas build -p ios
+# login to apple account
 
 
 
