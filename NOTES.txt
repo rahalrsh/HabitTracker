@@ -46,7 +46,10 @@ ToCheck
 7 - 
 	- Up to 3 app previews and 10 screenshots here
 	- only the first 3 will be used on the app installation sheets
-	- 1242 × 2688px
+	- 1242 × 2688px   iPhone  (6.5" Display)
+	- 2064 × 2752px   iPad 	  (13" Display)
+8 - check app.json
+	- ios.supportsTablet: false
 
 
 Use "Expo Application Services"
